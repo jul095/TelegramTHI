@@ -17,7 +17,7 @@ food = foodReg.findall(response)[1]
 food = pattern.findall(food)
 result = []
 for elem in food:
- 
+
     firstelem = re.sub(r"<sup>.*?<\/sup>", "", elem[0])
     secondelem = re.sub(r"&nbsp;", "", elem[1])
     secondelem = re.sub(r"\s{2, }" , "", secondelem)
@@ -33,10 +33,10 @@ bot = telegram.Bot(token)
 updater = Updater(token)
 
 def start(bot, update):
-        bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
+    bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
 def meal(bot, update):
-        for elem in result:
-            bot.sendMessage(chat_id=update.message.chat_id, text=elem)
+    for elem in result:
+        bot.sendMessage(chat_id=update.message.chat_id, text=elem)
 
 dispatcher = updater.dispatcher
 
