@@ -52,7 +52,6 @@ def getMensaData():
                 i = i + 1
 
             result = "\n".join(result)
-            print result
             mensadata.append([day, result])
             timestamp = time.time()
 
