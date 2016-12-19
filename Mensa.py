@@ -20,7 +20,6 @@ def getMensaData():
     global mensadata, timestamp
 
     # getting data every blabla minutes
-    print (time.time() - timestamp)
     if (time.time() - timestamp) > (60 * 0.5):
 
         # open website
