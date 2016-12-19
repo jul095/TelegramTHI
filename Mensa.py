@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import urllib2
 import telegram
 from telegram.ext import Updater, CommandHandler
@@ -10,21 +12,21 @@ response = urllib2.urlopen(link).read()
 
 foodReg = re.compile(r'Speiseplan.*', re.IGNORECASE)
 pattern = re.compile(r'<\/br>(.*?)<\/br>(.*?)<\/br>.*?<\/br>\s+<\/br>', re.IGNORECASE)
+priceReg = re.compile(r'[\d,]+', re.IGNORECASE)
 
 food = foodReg.findall(response)[1]
 #print response
 # print food
 food = pattern.findall(food)
 result = []
+i = 1
 for elem in food:
-
     firstelem = re.sub(r"<sup>.*?<\/sup>", "", elem[0])
-    secondelem = re.sub(r"&nbsp;", "", elem[1])
-    secondelem = re.sub(r"\s{2, }" , "", secondelem)
-    result.append(firstelem + " | " + secondelem)
+    price = priceReg.findall(elem[1])
+    result.append("*Essen " + str(i) + " (" + price[0] + "€)*: " + firstelem)
+    i = i + 1
 
-
-# result = "\n".join(result)
+result = "\n".join(result)
 print result
 
 # here for telegram bot
@@ -35,8 +37,7 @@ updater = Updater(token)
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
 def meal(bot, update):
-    for elem in result:
-        bot.sendMessage(chat_id=update.message.chat_id, text=elem)
+    bot.sendMessage(chat_id=update.message.chat_id, text=result, parse_mode=telegram.ParseMode.MARKDOWN)
 
 dispatcher = updater.dispatcher
 
