@@ -18,10 +18,9 @@ days = ["today", "tomorrow"]
 
 def getMensaData():
     global mensadata, timestamp
-
     # getting data every blabla minutes
     if (time.time() - timestamp) > (60 * 30):
-
+        mensadata = []
         # open website
         for day in days:
             if day == "today":
