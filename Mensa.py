@@ -2,35 +2,45 @@
 
 import urllib2, urllib
 import telegram
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 import re
-import time
+import time, datetime
+import logging
+from collections import deque
 
-token = '278206043:AAH13RqZiG1AdqcUpTDNbtAB-N_bL9EGeR4'
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# changing token for testing
+token = '278206043:AAH13RqZiG1AdqcUpTDNbtAB-N_bL9EGeR4' # this is the right token
+# token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # juliantestbot token
 link = "http://www.werkswelt.de/?id=ingo"
-
 
 timestamp = 0
 
 mensadata = []
 
-days = ["today", "tomorrow"]
+days = deque(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
 
 def getMensaData():
     global mensadata, timestamp
     # getting data every blabla minutes
     if (time.time() - timestamp) > (60 * 30):
         mensadata = []
+        now = datetime.datetime.now()
         # open website
-        for day in days:
-            if day == "today":
+        for j in range(0,2):
+            if days[j] == now.strftime('%A'):
                 response = urllib2.urlopen(link).read()      
             else:
                 value = ({'mybutton': 'vorwärts'})
                 data = urllib.urlencode(value)
                 req = urllib2.Request(link, data)
                 response = urllib2.urlopen(req).read()
- 
+                
             result = []
 
             dateReg = re.compile(r'<h4>(.+?)</h4>', re.IGNORECASE)
@@ -51,7 +61,7 @@ def getMensaData():
                 i = i + 1
 
             result = "\n".join(result)
-            mensadata.append([day, result])
+            mensadata.append([days[j], result])
             timestamp = time.time()
 
     return mensadata            
@@ -61,13 +71,47 @@ def getMensaData():
 
 bot = telegram.Bot(token)
 updater = Updater(token)
+reply_markup = None
+def createInlineButtons():
+    global reply_markup
 
+    keys = [[]]
+    now = datetime.datetime.now()
+    n = list(days).index(now.strftime('%A')) 
+    # shifting the hole thing
+    days.rotate(len(days) - n)
+
+    for i in range(0, 2):
+        if i is 0:
+            keys[0].append(telegram.InlineKeyboardButton(text=days[i], callback_data=str(i)))
+        else:
+            keys[0].append(telegram.InlineKeyboardButton(text=days[i], callback_data=str(i)))
+    reply_markup = telegram.InlineKeyboardMarkup(keys)
+
+lastdata = ""
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
 def mealtoday(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text=getMensaData()[0][1], parse_mode=telegram.ParseMode.MARKDOWN)
+    global lastdata
+    createInlineButtons()
+    lastdata = getMensaData()[0][1]
+    bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
 def mealtomorrow(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text=getMensaData()[1][1], parse_mode=telegram.ParseMode.MARKDOWN)
+    global lastdata
+    createInlineButtons()
+    lastdata = getMensaData()[1][1]
+    bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
+
+def button(bot, update):
+    global lastdata
+    query = update.callback_query
+    data = getMensaData()[int(query.data)][1]
+    if data is not lastdata:
+        bot.editMessageText(chat_id=query.message.chat_id, text=data, message_id=query.message.message_id, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
+        lastdata = data
+    else:
+        pass
+   
 
 dispatcher = updater.dispatcher
 
@@ -75,6 +119,7 @@ dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(CommandHandler('meal', mealtoday))
 dispatcher.add_handler(CommandHandler('mealtoday', mealtoday))
 dispatcher.add_handler(CommandHandler('mealtomorrow', mealtomorrow))
+dispatcher.add_handler(CallbackQueryHandler(button))
 
 updater.start_polling()
 
