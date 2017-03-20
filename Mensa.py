@@ -15,7 +15,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # changing token for testing
-token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # this is the right token
+token = '278206043:AAH13RqZiG1AdqcUpTDNbtAB-N_bL9EGeR4' # this is the right token
 # token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # juliantestbot token
 link = "http://www.werkswelt.de/?id=ingo"
 
