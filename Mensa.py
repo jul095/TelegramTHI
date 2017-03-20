@@ -15,7 +15,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # changing token for testing
-token = '278206043:AAH13RqZiG1AdqcUpTDNbtAB-N_bL9EGeR4' # this is the right token
+token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # this is the right token
 # token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # juliantestbot token
 link = "http://www.werkswelt.de/?id=ingo"
 
@@ -23,46 +23,53 @@ timestamp = 0
 
 mensadata = []
 
-days = deque(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+#days = deque(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
+
+
 
 def getMensaData():
     global mensadata, timestamp
     # getting data every blabla minutes
+
     if (time.time() - timestamp) > (60 * 30):
+    
         mensadata = []
+
         now = datetime.datetime.now()
+        
         # open website
-        for j in range(0,2):
-            if days[j] == now.strftime('%A'):
-                response = urllib2.urlopen(link).read()      
-            else:
-                value = ({'mybutton': 'vorwärts'})
-                data = urllib.urlencode(value)
-                req = urllib2.Request(link, data)
-                response = urllib2.urlopen(req).read()
+        response = urllib2.urlopen(link).read()  
+
+       
+
+        #value = ({'mybutton': 'vorwärts'})
+        #data = urllib.urlencode(value)
+        #req = urllib2.Request(link, data)
+        #response = urllib2.urlopen(req).read()
+
                 
-            result = []
+        result = []
 
-            dateReg = re.compile(r'<h4>(.+?)</h4>', re.IGNORECASE)
-            foodReg = re.compile(r'Speiseplan.*', re.IGNORECASE)
-            pattern = re.compile(r'<\/br>(.*?)<\/br>(.*?)<\/br>.*?<\/br>\s+<\/br>', re.IGNORECASE)
-            priceReg = re.compile(r'[\d,]+', re.IGNORECASE)
+        dateReg = re.compile(r'<h4>(.+)</h4>', re.IGNORECASE)
+        foodReg = re.compile(r'Essen \d<\/br>(.*?)<\/br>(\d,\d{2})', re.IGNORECASE)
+        pattern = re.compile(r'<\/br>(.*?)<\/br>(.*?)<\/br>.*?<\/br>\s+<\/br>', re.IGNORECASE)
 
-            food = foodReg.findall(response)[1]
-            food = pattern.findall(food)
-            date = dateReg.findall(response)[0]
-            result.append(str(date))
+        food = foodReg.findall(response)
+        date = dateReg.findall(response)[0]
+        result.append(str(date))    
 
-            i = 1
-            for elem in food:
-                firstelem = re.sub(r"<sup>.*?<\/sup>", "", elem[0])
-                price = priceReg.findall(elem[1])
-                result.append("*Essen " + str(i) + " (" + price[0] + "€)*: " + firstelem)
-                i = i + 1
 
-            result = "\n".join(result)
-            mensadata.append([days[j], result])
-            timestamp = time.time()
+        print food
+        i = 1
+        for elem in food:
+            firstelem = re.sub(r"<sup>.*?<\/sup>", "", elem[0])
+            result.append("*Essen " + str(i) + " (" + elem[1] + "€)*: " + firstelem)
+            i = i + 1
+
+        result = "\n".join(result)
+        mensadata.append([now.day,result])
+        print mensadata
+        timestamp = time.time()
 
     return mensadata            
 # end function
@@ -77,15 +84,7 @@ def createInlineButtons():
 
     keys = [[]]
     now = datetime.datetime.now()
-    n = list(days).index(now.strftime('%A')) 
-    # shifting the hole thing
-    days.rotate(len(days) - n)
-
-    for i in range(0, 2):
-        if i is 0:
-            keys[0].append(telegram.InlineKeyboardButton(text=days[i], callback_data=str(i)))
-        else:
-            keys[0].append(telegram.InlineKeyboardButton(text=days[i], callback_data=str(i)))
+    keys[0].append(telegram.InlineKeyboardButton(text="vorwaerts", callback_data=0))
     reply_markup = telegram.InlineKeyboardMarkup(keys)
 
 lastdata = ""
@@ -93,12 +92,17 @@ def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
 def mealtoday(bot, update):
     global lastdata
-    createInlineButtons()
+    #createInlineButtons()
+    timestamp = 0
     lastdata = getMensaData()[0][1]
+
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
+
+
 def mealtomorrow(bot, update):
     global lastdata
-    createInlineButtons()
+
+    #createInlineButtons()
     lastdata = getMensaData()[1][1]
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
 
