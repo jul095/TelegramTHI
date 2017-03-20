@@ -34,42 +34,45 @@ def getMensaData():
     if (time.time() - timestamp) > (60 * 30):
     
         mensadata = []
-
         now = datetime.datetime.now()
-        
-        # open website
-        response = urllib2.urlopen(link).read()  
 
-       
+        counter = 0
 
-        #value = ({'mybutton': 'vorwärts'})
-        #data = urllib.urlencode(value)
-        #req = urllib2.Request(link, data)
-        #response = urllib2.urlopen(req).read()
+        while counter < 2:
 
-                
-        result = []
+            if counter == 1:
+                value = ({'mybutton': 'vorwärts'})
+                data = urllib.urlencode(value)
+                req = urllib2.Request(link, data)
+                response = urllib2.urlopen(req).read()
+            else:
+                response = urllib2.urlopen(link).read() 
+    
+             
+            result = []
 
-        dateReg = re.compile(r'<h4>(.+)</h4>', re.IGNORECASE)
-        foodReg = re.compile(r'Essen \d<\/br>(.*?)<\/br>(\d,\d{2})', re.IGNORECASE)
-        pattern = re.compile(r'<\/br>(.*?)<\/br>(.*?)<\/br>.*?<\/br>\s+<\/br>', re.IGNORECASE)
+            dateReg = re.compile(r'<h4>(.+)</h4>', re.IGNORECASE)
+            foodReg = re.compile(r'Essen \d<\/br>(.*?)<\/br>(\d,\d{2})', re.IGNORECASE)
+            pattern = re.compile(r'<\/br>(.*?)<\/br>(.*?)<\/br>.*?<\/br>\s+<\/br>', re.IGNORECASE)
 
-        food = foodReg.findall(response)
-        date = dateReg.findall(response)[0]
-        result.append(str(date))    
+            food = foodReg.findall(response)
+            date = dateReg.findall(response)[0]
+            result.append(str(date))    
+            i = 1
+            for elem in food:
+                firstelem = re.sub(r"<sup>.*?<\/sup>", "", elem[0])
+                result.append("*Essen " + str(i) + " (" + elem[1] + "€)*: " + firstelem)
+                i = i + 1
 
 
-        print food
-        i = 1
-        for elem in food:
-            firstelem = re.sub(r"<sup>.*?<\/sup>", "", elem[0])
-            result.append("*Essen " + str(i) + " (" + elem[1] + "€)*: " + firstelem)
-            i = i + 1
+            result = "\n".join(result)
+            mensadata.append([now.day,result])
+            print mensadata
+            counter += 1
 
-        result = "\n".join(result)
-        mensadata.append([now.day,result])
-        print mensadata
         timestamp = time.time()
+
+
 
     return mensadata            
 # end function
@@ -93,7 +96,6 @@ def start(bot, update):
 def mealtoday(bot, update):
     global lastdata
     #createInlineButtons()
-    timestamp = 0
     lastdata = getMensaData()[0][1]
 
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
