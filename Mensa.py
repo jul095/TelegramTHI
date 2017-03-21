@@ -64,7 +64,6 @@ def getMensaData():
 
             result = "\n".join(result)
             mensadata.append([now.day,result])
-            print mensadata
             counter += 1
 
         timestamp = time.time()
@@ -87,12 +86,13 @@ def createInlineButtons(txt, clbk):
     keys[0].append(telegram.InlineKeyboardButton(text=txt, callback_data=str(clbk)))
     reply_markup = telegram.InlineKeyboardMarkup(keys)
 
+
 lastdata = ""
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
 def mealtoday(bot, update):
     global lastdata, reply_markup
-    createInlineButtons("vorwärts",1)
+    createInlineButtons("Vor",1)
     lastdata = getMensaData()[0][1]
 
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
@@ -110,14 +110,17 @@ def button(bot, update):
     query = update.callback_query
     data = getMensaData()[int(query.data)][1]
     if data is not lastdata:
-        #reply_markup = []
-       
-        
+        if int(query.data) is 1:
+            createInlineButtons("Zurück",0)
+        else:
+            createInlineButtons("Vor",1)
+
         bot.editMessageText(chat_id=query.message.chat_id, text=data, message_id=query.message.message_id, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
         lastdata = data
-        bot.answerCallbackQuery(callback_query_id=query.id)
+        
     else:
         pass
+    bot.answerCallbackQuery(callback_query_id=query.id)
 
 
 dispatcher = updater.dispatcher
