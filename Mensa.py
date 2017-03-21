@@ -15,16 +15,13 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # changing token for testing
-token = '278206043:AAH13RqZiG1AdqcUpTDNbtAB-N_bL9EGeR4' # this is the right token
-# token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # juliantestbot token
+#token = '278206043:AAH13RqZiG1AdqcUpTDNbtAB-N_bL9EGeR4' # this is the right token
+token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # juliantestbot token
 link = "http://www.werkswelt.de/?id=ingo"
 
 timestamp = 0
 
 mensadata = []
-
-#days = deque(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
-
 
 
 def getMensaData():
@@ -82,12 +79,12 @@ def getMensaData():
 bot = telegram.Bot(token)
 updater = Updater(token)
 reply_markup = None
-def createInlineButtons():
+def createInlineButtons(txt, clbk):
     global reply_markup
     
     keys = [[]]
     now = datetime.datetime.now()
-    keys[0].append(telegram.InlineKeyboardButton(text="vorwaerts", callback_data=str(1)))
+    keys[0].append(telegram.InlineKeyboardButton(text=txt, callback_data=str(clbk)))
     reply_markup = telegram.InlineKeyboardMarkup(keys)
 
 lastdata = ""
@@ -95,7 +92,7 @@ def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
 def mealtoday(bot, update):
     global lastdata, reply_markup
-    createInlineButtons()
+    createInlineButtons("vorwärts",1)
     lastdata = getMensaData()[0][1]
 
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
@@ -109,14 +106,16 @@ def mealtomorrow(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
 
 def button(bot, update):
-    global lastdata
+    global lastdata, reply_markup
     query = update.callback_query
     data = getMensaData()[int(query.data)][1]
     if data is not lastdata:
-        reply_markup = []
-        createInlineButtons()
+        #reply_markup = []
+       
+        
         bot.editMessageText(chat_id=query.message.chat_id, text=data, message_id=query.message.message_id, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
         lastdata = data
+        bot.answerCallbackQuery(callback_query_id=query.id)
     else:
         pass
 
