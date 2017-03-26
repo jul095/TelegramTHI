@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import urllib2, urllib
 import telegram
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
@@ -14,9 +15,11 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# changing token for testing
-token = '278206043:AAH13RqZiG1AdqcUpTDNbtAB-N_bL9EGeR4' # this is the right token
-#token = '188956812:AAGfjGfm5kTKT9iktSsvim6Ue200dROFT2w' # juliantestbot token
+# check if token is given
+if len(sys.argv) != 2:
+    raise Exception("You need a token as argument")
+token = sys.argv[1]
+
 link = "http://www.werkswelt.de/?id=ingo"
 
 timestamp = 0
