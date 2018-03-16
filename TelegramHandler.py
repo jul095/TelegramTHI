@@ -4,6 +4,7 @@ import logging
 import sys
 import datetime
 import telegram
+import argparse
 
 from telegram.ext import *
 
@@ -13,17 +14,24 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+
 
 # check if token is given
-if len(sys.argv) != 2:
+parser = argparse.ArgumentParser(description='Python Telegram Mensa Bot')
+parser.add_argument('-t','--token', help='token for the telegram bot',required=True)
+parser.add_argument('-d','--debug', help='debug flag, change webhook mode to polling, enable info logging', required=False)
+args = parser.parse_args()
 
-    raise Exception("You need a token as argument")
-token = sys.argv[1]
+token = args.token
+
+if args.debug is not None:
+    logger.setLevel(logging.DEBUG)
 
 bot = telegram.Bot(token)
 updater = Updater(token)
 reply_markup = None
+
+
 def createInlineButtons(txt, clbk):
     global reply_markup
     
@@ -78,9 +86,11 @@ dispatcher.add_handler(CommandHandler('mealtomorrow', mealtomorrow))
 dispatcher.add_handler(CallbackQueryHandler(button))
 
 
-updater.start_webhook(listen='127.0.0.1', port=5000, url_path=token)
-updater.bot.set_webhook(url='https://julianst.de/' + token)
-
+if args.debug is None:
+    updater.start_webhook(listen='127.0.0.1', port=5000, url_path=token)
+    updater.bot.set_webhook(url='https://julianst.de/' + token)
+else:
+    updater.start_polling()
 
 # end programm with ctrl+c
 updater.idle()
