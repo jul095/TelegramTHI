@@ -75,7 +75,7 @@ dispatcher.add_handler(CommandHandler('mealtoday', mealtoday))
 dispatcher.add_handler(CommandHandler('mealtomorrow', mealtomorrow))
 dispatcher.add_handler(CallbackQueryHandler(button))
 
-updater.start_polling()
+
 
 # end programm with ctrl+c
 updater.idle()
