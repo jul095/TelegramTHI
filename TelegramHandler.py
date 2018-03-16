@@ -17,6 +17,7 @@ logger.setLevel(logging.INFO)
 
 # check if token is given
 if len(sys.argv) != 2:
+
     raise Exception("You need a token as argument")
 token = sys.argv[1]
 
@@ -30,6 +31,7 @@ def createInlineButtons(txt, clbk):
     now = datetime.datetime.now()
     keys[0].append(telegram.InlineKeyboardButton(text=txt, callback_data=str(clbk)))
     reply_markup = telegram.InlineKeyboardMarkup(keys)
+
 lastdata = ""
 
 def start(bot, update):
@@ -38,8 +40,8 @@ def mealtoday(bot, update):
     global lastdata, reply_markup
     createInlineButtons("Vor",1)
     lastdata = getMensaData()[0][1]
-
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
+    logging.log(logging.INFO,"send meal of today")
 
 
 def mealtomorrow(bot, update):
@@ -75,6 +77,9 @@ dispatcher.add_handler(CommandHandler('mealtoday', mealtoday))
 dispatcher.add_handler(CommandHandler('mealtomorrow', mealtomorrow))
 dispatcher.add_handler(CallbackQueryHandler(button))
 
+
+updater.start_webhook(listen='127.0.0.1', port=5000, url_path=token)
+updater.bot.set_webhook(url='https://julianst.de/' + token)
 
 
 # end programm with ctrl+c
