@@ -10,6 +10,9 @@ from telegram.ext import *
 
 from Mensa import getMensaData
 
+reload(sys)  
+sys.setdefaultencoding('utf8')
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -25,17 +28,16 @@ args = parser.parse_args()
 token = args.token
 
 if args.debug is not None:
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
 bot = telegram.Bot(token)
 updater = Updater(token)
 reply_markup = None
 
-
+keys = [[]]
 def createInlineButtons(txt, clbk):
-    global reply_markup
+    global reply_markup, keys
     
-    keys = [[]]
     now = datetime.datetime.now()
     keys[0].append(telegram.InlineKeyboardButton(text=txt, callback_data=str(clbk)))
     reply_markup = telegram.InlineKeyboardMarkup(keys)
@@ -47,6 +49,7 @@ def start(bot, update):
 def mealtoday(bot, update):
     global lastdata, reply_markup
     createInlineButtons("Vor",1)
+    createInlineButtons("Zurück",0)
     lastdata = getMensaData()[0][1]
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
     logging.log(logging.INFO,"send meal of today")
@@ -59,18 +62,28 @@ def mealtomorrow(bot, update):
     lastdata = getMensaData()[1][1]
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
 
+currentPos = 1
 def button(bot, update):
-    global lastdata, reply_markup
+    global lastdata, reply_markup, currentPos
     query = update.callback_query
-    data = getMensaData()[int(query.data)][1]
+    
+    
+    length = len(getMensaData())
+    
+    data = getMensaData()[currentPos][1]
+
     if data is not lastdata:
-        if int(query.data) is 1:
+
+        if currentPos is length-1:
             createInlineButtons("Zurück",0)
+            currentPos -= 1
         else:
             createInlineButtons("Vor",1)
+            currentPos += 1
 
         bot.editMessageText(chat_id=query.message.chat_id, text=data, message_id=query.message.message_id, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
         lastdata = data
+        
         
     else:
         pass
