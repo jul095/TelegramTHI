@@ -34,13 +34,22 @@ bot = telegram.Bot(token)
 updater = Updater(token)
 reply_markup = None
 
-keys = [[]]
-def createInlineButtons(txt, clbk):
-    global reply_markup, keys
-    
-    now = datetime.datetime.now()
-    keys[0].append(telegram.InlineKeyboardButton(text=txt, callback_data=str(clbk)))
-    reply_markup = telegram.InlineKeyboardMarkup(keys)
+vorsymbol = u'\u27a1'
+zuruecksymbol = u'\u2b05'
+def createVorButton():
+    global keys
+    keys = [[]] 
+    keys[0].append(telegram.InlineKeyboardButton(text=vorsymbol,callback_data=0)) 
+def createZurueckButton():
+    global keys
+    keys = [[]] 
+    keys[0].append(telegram.InlineKeyboardButton(text=zuruecksymbol, callback_data=1))
+
+def createBothButtons():
+    global keys
+    keys = [[]] 
+    keys[0].append(telegram.InlineKeyboardButton(text=zuruecksymbol, callback_data=1))
+    keys[0].append(telegram.InlineKeyboardButton(text=vorsymbol,callback_data=0))
 
 lastdata = ""
 
@@ -48,8 +57,11 @@ def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-BOT")
 def mealtoday(bot, update):
     global lastdata, reply_markup
-    createInlineButtons("Vor",1)
-    createInlineButtons("Zurück",0)
+    #createInlineButtons("Zurück",0)
+    createVorButton()
+
+    reply_markup = telegram.InlineKeyboardMarkup(keys)
+
     lastdata = getMensaData()[0][1]
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
     logging.log(logging.INFO,"send meal of today")
@@ -62,25 +74,33 @@ def mealtomorrow(bot, update):
     lastdata = getMensaData()[1][1]
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
 
-currentPos = 1
+currentPos = 0
 def button(bot, update):
     global lastdata, reply_markup, currentPos
     query = update.callback_query
     
-    
     length = len(getMensaData())
     
-    data = getMensaData()[currentPos][1]
+    if query.data == unicode(1):
+        # zurueck
+        currentPos = currentPos - 1
+    else:
+        # Vor
+        currentPos += 1
 
+    
+    data = getMensaData()[currentPos][1]
+    
     if data is not lastdata:
 
         if currentPos is length-1:
-            createInlineButtons("Zurück",0)
-            currentPos -= 1
+            createZurueckButton()
+        elif currentPos > 0:
+            createBothButtons()
         else:
-            createInlineButtons("Vor",1)
-            currentPos += 1
-
+            createVorButton()
+        
+        reply_markup = telegram.InlineKeyboardMarkup(keys)
         bot.editMessageText(chat_id=query.message.chat_id, text=data, message_id=query.message.message_id, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
         lastdata = data
         
