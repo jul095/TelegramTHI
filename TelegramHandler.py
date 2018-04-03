@@ -13,7 +13,7 @@ from Mensa import getMensaData
 reload(sys)  
 sys.setdefaultencoding('utf8')
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.ERROR,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 logger = logging.getLogger()
@@ -55,7 +55,7 @@ lastdata = ""
 
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-Mensabot. Ich sende euch auf den Befehl \meal den aktuellen Speiseplan zu")
-    
+
 def mealtoday(bot, update):
     global lastdata, reply_markup
     #createInlineButtons("Zurück",0)
