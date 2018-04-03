@@ -52,14 +52,16 @@ def createBothButtons():
     keys[0].append(telegram.InlineKeyboardButton(text=vorsymbol,callback_data=0))
 
 lastdata = ""
+currentPos = 0
 
 def start(bot, update):
     bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-Mensabot. Ich sende euch auf den Befehl \meal den aktuellen Speiseplan zu")
 
 def mealtoday(bot, update):
-    global lastdata, reply_markup
+    global lastdata, reply_markup, currentPos
     #createInlineButtons("Zurück",0)
     createVorButton()
+    currentPos = 0
 
     reply_markup = telegram.InlineKeyboardMarkup(keys)
 
@@ -75,7 +77,7 @@ def mealtomorrow(bot, update):
     lastdata = getMensaData()[1][1]
     bot.sendMessage(chat_id=update.message.chat_id, text=lastdata, parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=reply_markup)
 
-currentPos = 0
+
 def button(bot, update):
     global lastdata, reply_markup, currentPos
     query = update.callback_query
