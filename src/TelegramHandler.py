@@ -58,7 +58,7 @@ def createBothButtons():
     keys[0].append(telegram.InlineKeyboardButton(text=vorsymbol,callback_data=currentPos+1))
 
 def start(bot, update):
-    bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-Mensabot. Ich sende euch auf den Befehl \meal den aktuellen Speiseplan zu")
+    bot.sendMessage(chat_id=update.message.chat_id, text="Hallo, hier ist ihr THI-Mensabot. Ich sende euch auf den Befehl /meal den aktuellen Speiseplan der Hochschulmensa zu")
 
 def mealtoday(bot, update):
     global lastdata, reply_markup, currentPos
